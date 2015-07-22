@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/songTitle"
+        android:text="Unknown"
+        android:textSize = "20sp"
+        android:textColor="#000000"
+        android:singleLine="true"
+        android:ellipsize="marquee"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:scrollHorizontally="true"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"/>
+
+    <!-- Use this code for single line scrolling action
+        android:singleLine="true"
+        android:ellipsize="marquee"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:scrollHorizontally="true" -->
+
+    <TextView
+        android:id="@+id/songArtist"
+        android:text="Unknown"
+        android:layout_below="@+id/songTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginRight="5dp"/>
+
+    <TextView
+        android:id="@+id/ratingStars"
+        android:text="1"
+        android:layout_below="@+id/songTitle"
+        android:layout_toRightOf="@+id/songArtist"
+
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent" />
+
+</RelativeLayout>
