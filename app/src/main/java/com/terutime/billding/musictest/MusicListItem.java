@@ -10,11 +10,11 @@ public class MusicListItem
     private String songTitle;
     private String songData;
     private String songDisplayName;
-    private String songDuration;
+    private long songDuration;
     private int ratingStars;
 
     //Constructor for the music object container
-    public MusicListItem(long songID, String songArtist, String songTitle, String songData, String songDisplayName, String songDuration)
+    public MusicListItem(long songID, String songArtist, String songTitle, String songData, String songDisplayName, long songDuration)
     {
         this.songID = songID;
         this.songArtist = songArtist;
@@ -80,12 +80,12 @@ public class MusicListItem
     }
 
     //Properties for Song Duration
-    public String getSongDuration()
+    public long getSongDuration()
     {
         return songDuration;
     }
 
-    public void setSongDuration(String songDuration)
+    public void setSongDuration(long songDuration)
     {
         this.songDuration = songDuration;
     }

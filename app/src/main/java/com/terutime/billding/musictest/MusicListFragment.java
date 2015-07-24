@@ -78,7 +78,7 @@ public class MusicListFragment extends Fragment implements AbsListView.OnItemCli
                     cursor.getString(2),
                     cursor.getString(3),
                     cursor.getString(4),
-                    cursor.getString(5));
+                    cursor.getLong(5));
             musicList.add(song);
         }
 
@@ -95,11 +95,14 @@ public class MusicListFragment extends Fragment implements AbsListView.OnItemCli
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        try {
+        try
+        {
             mListener = (OnFragmentInteractionListener) activity;
-        } catch (ClassCastException e) {
+        }
+        catch (ClassCastException e)
+        {
             throw new ClassCastException(activity.toString()
-                    + " must implement OnFragmentInteractionListener");
+                    + " must implement OnTabInteractionListener");
         }
     }
 
