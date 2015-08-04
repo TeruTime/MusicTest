@@ -13,7 +13,6 @@ import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.IBinder;
 import android.provider.MediaStore;
-import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
@@ -120,7 +119,7 @@ public class MainActivity extends ActionBarActivity implements MusicListFragment
         doBindService();
 
         //Start up the musicplayer fragment
-        MusicPlayerFragment playerFrag = (MusicPlayerFragment)getFragmentManager().findFragmentById(R.id.fragment_musicplayer);
+        MusicPlayerFragment playerFrag = (MusicPlayerFragment)getSupportFragmentManager().findFragmentById(R.id.fragment_musicplayer);
         if(playerFrag != null)
         {
             //only call this if there is somehow a multiplane layout
@@ -132,7 +131,8 @@ public class MainActivity extends ActionBarActivity implements MusicListFragment
 
             //Replace whatever is in the current fragment view with this new fragment. Then add this
             // fragment to the back stack so the user can navigate back.
-            android.app.FragmentTransaction transaction = getFragmentManager().beginTransaction();
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit);
             transaction.replace(R.id.fragment_container,newFragment);
             transaction.addToBackStack(null);
             //commit the transaction
@@ -147,7 +147,42 @@ public class MainActivity extends ActionBarActivity implements MusicListFragment
         if(mBoundService != null)
         {
             int currentPosition = mBoundService.startPlayback();
-            //send message back to the Music Player
+            //send message back to the Music Player using a handler
+
+        }
+    }
+
+    public void onMediaPlayerPause()
+    {
+        if(mBoundService != null)
+        {
+            mBoundService.pausePlayback();
+        }
+    }
+
+    public void onMediaPlayerFwd()
+    {
+        if(mBoundService != null)
+        {
+            mBoundService.skipForward();
+        }
+    }
+
+    public void onMediaPlayerSeek(int progress)
+    {
+        if(mBoundService != null)
+        {
+            mBoundService.seekToTime(progress);
+        }
+    }
+
+    @Override
+    public void onMediaRetrieveTime()
+    {
+        if(mBoundService != null)
+        {
+            int currentPosition = mBoundService.currentPosition();
+            //send message back to Music Player using a handler
 
         }
     }

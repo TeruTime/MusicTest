@@ -1,6 +1,10 @@
 package com.terutime.billding.musictest;
 
 import android.app.Activity;
+import android.content.ContentUris;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.support.v4.app.Fragment;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -13,8 +17,11 @@ import android.widget.AdapterView;
 import android.widget.ListAdapter;
 
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Created by drdc on 2015-07-21.
@@ -27,9 +34,10 @@ public class MusicListFragment extends Fragment implements AbsListView.OnItemCli
     private OnFragmentInteractionListener mListener;
 
     //Placeholder Interface for now
-    public interface OnFragmentInteractionListener {
-        public void onFragmentInteraction(String id);
-        public void onListItemClick(MusicListItem item);
+    public interface OnFragmentInteractionListener
+    {
+        void onFragmentInteraction(String id);
+        void onListItemClick(MusicListItem item);
     }
 
     public MusicListFragment()
@@ -55,10 +63,12 @@ public class MusicListFragment extends Fragment implements AbsListView.OnItemCli
         String[] projection = {
                 MediaStore.Audio.Media._ID,
                 MediaStore.Audio.Media.ARTIST,
+                MediaStore.Audio.Media.ALBUM,
                 MediaStore.Audio.Media.TITLE,
                 MediaStore.Audio.Media.DATA,
                 MediaStore.Audio.Media.DISPLAY_NAME,
-                MediaStore.Audio.Media.DURATION
+                MediaStore.Audio.Media.DURATION,
+                MediaStore.Audio.Media.ALBUM_ID
         };
 
         //Create a cursor object to navigate through the database
@@ -78,7 +88,36 @@ public class MusicListFragment extends Fragment implements AbsListView.OnItemCli
                     cursor.getString(2),
                     cursor.getString(3),
                     cursor.getString(4),
-                    cursor.getLong(5));
+                    cursor.getString(5),
+                    cursor.getLong(6),
+                    cursor.getLong(7));
+
+            Uri artworkUri = Uri.parse("content://media/external/audio/albumart");
+            Uri albumArtUri = ContentUris.withAppendedId(artworkUri, song.getSongAlbumID());
+
+            Bitmap bitmap = null;
+            Bitmap scaledBitmap = null;
+            //use scaled bitmap to display the album art on the listview
+            try
+            {
+                bitmap = MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), albumArtUri);
+                scaledBitmap = Bitmap.createScaledBitmap(bitmap, 30, 30, true);
+            }
+            catch (FileNotFoundException exception)
+            {
+                exception.printStackTrace();
+                //Replace the bitmap with a default audio file picture
+                bitmap = BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.audio_file);
+                scaledBitmap = Bitmap.createScaledBitmap(bitmap, 30, 30, true);
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+
+            //Add the bitmap to the MusicList item holder
+            song.setSongAlbumArt(bitmap);
+
             musicList.add(song);
         }
 
