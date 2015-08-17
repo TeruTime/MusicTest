@@ -1,5 +1,7 @@
 package com.terutime.billding.musictest;
 
+import android.graphics.Bitmap;
+
 /**
  * Created by drdc on 2015-07-21.
  */
@@ -7,21 +9,27 @@ public class MusicListItem
 {
     private long songID;
     private String songArtist;
+    private String songAlbum;
     private String songTitle;
     private String songData;
     private String songDisplayName;
-    private String songDuration;
+    private long songDuration;
     private int ratingStars;
+    private long songAlbumID;
+    private Bitmap songAlbumArt;
 
     //Constructor for the music object container
-    public MusicListItem(long songID, String songArtist, String songTitle, String songData, String songDisplayName, String songDuration)
+    public MusicListItem(long songID, String songArtist, String songAlbum, String songTitle,
+                         String songData, String songDisplayName, long songDuration, long songAlbumID)
     {
         this.songID = songID;
         this.songArtist = songArtist;
+        this.songAlbum = songAlbum;
         this.songTitle = songTitle;
         this.songData = songData;
         this.songDisplayName = songDisplayName;
         this.songDuration = songDuration;
+        this.songAlbumID = songAlbumID;
     }
 
     //Properties for Song ID
@@ -44,6 +52,17 @@ public class MusicListItem
     public void setSongArtist(String songArtist)
     {
         this.songArtist = songArtist;
+    }
+
+    //Properties for Song Album
+    public String getSongAlbum()
+    {
+        return songAlbum;
+    }
+
+    public void setSongAlbum(String songAlbum)
+    {
+        this.songAlbum = songAlbum;
     }
 
     //Properties for Song Title
@@ -80,12 +99,12 @@ public class MusicListItem
     }
 
     //Properties for Song Duration
-    public String getSongDuration()
+    public long getSongDuration()
     {
         return songDuration;
     }
 
-    public void setSongDuration(String songDuration)
+    public void setSongDuration(long songDuration)
     {
         this.songDuration = songDuration;
     }
@@ -103,6 +122,28 @@ public class MusicListItem
             ratingStars = 6;
 
         this.ratingStars = ratingStars;
+    }
+
+    //Properties for Song AlbumID
+    public long getSongAlbumID()
+    {
+        return songAlbumID;
+    }
+
+    public void setSongAlbumID(long songAlbumID)
+    {
+        this.songAlbumID = songAlbumID;
+    }
+
+    //Properties for Song Album Art
+    public Bitmap getSongAlbumArt()
+    {
+        return songAlbumArt;
+    }
+
+    public void setSongAlbumArt(Bitmap songAlbumArt)
+    {
+        this.songAlbumArt = songAlbumArt;
     }
 
 }
