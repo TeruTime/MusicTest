@@ -13,12 +13,25 @@ import android.provider.MediaStore;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import java.util.concurrent.TimeUnit;
+
 public class MusicPlayerService extends Service
 {
-	private static final String ACTION_PLAY = "com.terutime.billding.musicTest.MusicPlayerService";
-	MediaPlayer mediaPlayer = null;
-	private Looper mServiceLooper;
-	private ServiceHandler mServiceHandler;
+    private static final String ACTION_PLAY = "com.terutime.billding.musicTest.ACTION_PLAY";
+    private static final String UPDATE_TIME = "com.terutime.billding.musictest.UPDATE_TIME";
+    private static final String ACTION_PAUSE = "com.terutime.billding.musictest.ACTION_PAUSE";
+    private static final int MUSIC_PLAY = 1;
+    private static final int MUSIC_PAUSE = 2;
+
+    private NotificationManager mNM;
+    private int NOTFICATION = 14352;
+    private final IBinder mBinder = new LocalBinder();
+    private Callbacks activity;
+
+    private double timeElapsed = 0, finalTime = 0;
+    private int forwardTime = 2000, backwardTime = 2000;
+    private Handler durationHandler = new Handler();
+
 	private ArrayList<Uri> playList = new ArrayList<Uri>();
 	private int currentPosition;
 	//Replay current is for replaying the currently playing song
@@ -26,28 +39,50 @@ public class MusicPlayerService extends Service
 	//Replay is for replaying the current playlist
 	private boolean replay = false;
 
-	private final class ServiceHandler extends Handler
-	{
-		public ServiceHandler(Looper looper)
-		{
-			super(looper);
-		}
+    MediaPlayer mediaPlayer = null;
 
-		@Override
-		public void handleMessage(Message msg)
-		{
+    public class LocalBinder extends Binder
+    {
+        MusicPlayerService getService()
+        {
+            return MusicPlayerService.this;
+        }
+    }
 
-		}
-	}
+    public interface Callbacks
+    {
+        public void updateClient(int data);
+    }
 
-	public MusicPlayerService()
-	{
-	}
+    /*private Looper mServiceLooper;
+    private ServiceHandler mServiceHandler;
 
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId)
-	{
-		/*HandlerThread thread = new HandlerThread("ServiceStartArguments", Process.THREAD_PRIORITY_BACKGROUND);
+    private final class ServiceHandler extends Handler
+    {
+        public ServiceHandler(Looper looper)
+        {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(Message msg)
+        {
+
+        }
+    }
+    @Override
+    public void onCreate()
+    {
+        mNM = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        showNotification();
+    }*/
+
+    public MusicPlayerService() {}
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId)
+    {
+        /*HandlerThread thread = new HandlerThread("ServiceStartArguments", Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);*/
@@ -94,6 +129,13 @@ public class MusicPlayerService extends Service
 				setMpDataSource();
 			}
 		});
+
+mediaPlayer.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+            @Override
+            public boolean onError(MediaPlayer mp, int what, int extra) {
+                return false;
+            }
+        });
 		
 		//convert the id we recieved from the intent into a Uri that we can use to set the current song
 		long id = intent.getLongExtra("MUSIC_ID", 0);
@@ -191,9 +233,106 @@ public class MusicPlayerService extends Service
 		mediaPlayer.prepareAsync();
 	}
 	
-	@Override
-	public IBinder onBind(Intent intent) {
-		// TODO: Return the communication channel to the service.
-		throw new UnsupportedOperationException("Not yet implemented");
-	}
+	//Create messenger between activity and this service.
+    //Also remember how to do fragment transactions and communication from Activity to Fragment to allow for updating of the music player
+    @Override
+    public IBinder onBind(Intent intent)
+    {
+        // TODO: Return the communication channel to the service.
+        //throw new UnsupportedOperationException("Not yet implemented");
+        return mBinder;
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        mNM.cancel(NOTFICATION);
+
+        if(mediaPlayer != null)
+            mediaPlayer.release();
+    }
+
+public void registerClient(Activity activity)
+    {
+        this.activity = (Callbacks)activity;
+    }
+
+public int startPlayback()
+    {
+        mediaPlayer.start();
+        //LocalBroadcastManager.getInstance(getBaseContext()).sendBroadcast(new Intent(ACTION_PLAY));
+
+        //start the timer for keeping track of time duration of the song
+        //TODO: Encase this into a if block because we do not want to run this if MusicPlayerFragment is not running.
+        //TODO: Create a boolean in that should be triggered during onBackPressed so we can tell the service no to send broadcasts
+        /*TODO: There probably should be a method just to run the updateSeekBarTime thread, but such use cases
+        have not been determined yet*/
+        durationHandler.postDelayed(updateSeekBarTime, 100);
+        finalTime = mediaPlayer.getDuration();
+        return mediaPlayer.getCurrentPosition();
+    }
+
+    //Pauses playback of the song
+    public void pausePlayback()
+    {
+        mediaPlayer.pause();
+        //LocalBroadcastManager.getInstance(getBaseContext()).sendBroadcast(new Intent(ACTION_PAUSE));
+    }
+
+    //returns the current position of the song (what the current time of the song is)
+    public int currentPosition()
+    {
+        return mediaPlayer.getCurrentPosition();
+    }
+
+    //Skips the song forward a set amount of time
+    //TODO: pretty much useless, eventually change this into skip forward to the next song.
+    public void skipForward()
+    {
+        //check if we can go forward at forwardTime seconds before song ends
+        if ((timeElapsed + forwardTime) <= finalTime)
+        {
+            timeElapsed = timeElapsed + forwardTime;
+            //seek to the exact second of the track
+            mediaPlayer.seekTo((int) timeElapsed);
+        }
+    }
+
+    //Jumps to the specific time the user moves to on the seekbar.
+    public void seekToTime(int seekTime)
+    {
+        mediaPlayer.seekTo(seekTime);
+    }
+
+    //handler to change seekBarTime
+    private Runnable updateSeekBarTime = new Runnable() {
+        public void run() {
+            //get current position
+            //listener.onMediaRetrieveTime();
+            timeElapsed = mediaPlayer.getCurrentPosition();
+            //set seekbar progress
+            //seekbar.setProgress((int) timeElapsed);
+            //set time remaing
+            //TODO: change the time left stuff to time elapsed. **Look at std music player for example for displaying time
+            double timeRemaining = finalTime - timeElapsed;
+            String duration = (String.format("%d min, %d sec", TimeUnit.MILLISECONDS.toMinutes((long) timeRemaining),
+                    TimeUnit.MILLISECONDS.toSeconds((long) timeRemaining) -
+                            TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes((long) timeRemaining))));
+
+            //Broadcast the duration left and the timeElapsed to the MusicPlayerFragment
+            Intent intent = new Intent(UPDATE_TIME);
+            intent.putExtra("Duration", duration);
+            intent.putExtra("TimeElapsed", timeElapsed);
+            intent.putExtra("IsPlaying", mediaPlayer.isPlaying());
+            LocalBroadcastManager.getInstance(getBaseContext()).sendBroadcast(intent);
+
+            //repeat yourself that again in 100 miliseconds
+            durationHandler.postDelayed(this, 100);
+        }
+    };
+
+    /*public void showNotification()
+    {
+
+    }*/
 }
