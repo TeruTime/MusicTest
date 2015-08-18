@@ -3,7 +3,6 @@ package com.terutime.billding.musictest;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,7 +30,6 @@ public class MusicListAdapter extends ArrayAdapter
     //Holder for the list items
     private class ViewHolder
     {
-        SquareImageView albumArt;
         TextView titleText;
         TextView artistText;
         TextView ratingStarText;
@@ -52,7 +50,6 @@ public class MusicListAdapter extends ArrayAdapter
             //Create a new View holder
             holder = new ViewHolder();
             //map the textviews in view holder to the text fields inside of the layout files
-            holder.albumArt = (SquareImageView)viewToUse.findViewById(R.id.mp3Image);
             holder.titleText = (TextView)viewToUse.findViewById(R.id.songTitle);
             holder.artistText = (TextView)viewToUse.findViewById(R.id.songArtist);
             holder.ratingStarText = (TextView)viewToUse.findViewById(R.id.ratingStars);
@@ -64,12 +61,9 @@ public class MusicListAdapter extends ArrayAdapter
             holder = (ViewHolder) viewToUse.getTag();
         }
 
-        //int height = holder.albumArt.getHeight();
-        //holder.albumArt.setImageBitmap(Bitmap.createScaledBitmap(item.getSongAlbumArt(), 100, 100, true));
         holder.titleText.setText(item.getSongTitle());
         holder.artistText.setText(item.getSongArtist());
         holder.ratingStarText.setText("1");
-        holder.albumArt.setImageBitmap(item.getSongAlbumArt());
 
         //This line is used to trigger the horizontal scrolling action
         holder.titleText.setSelected(true);
