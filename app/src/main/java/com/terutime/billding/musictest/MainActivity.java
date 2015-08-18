@@ -31,7 +31,7 @@ import android.widget.TextView;
 
 
 public class MainActivity extends ActionBarActivity implements MusicListFragment.OnFragmentInteractionListener,
-        MusicPlayerService.Callbacks, MusicPlayerFragment.OnMusicPlayerListener{
+        MusicPlayerService.Callbacks, MusicPlayerFragment.OnMusicPlayerListener, PlayListFragment.OnPlayListInteractionListener{
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -96,7 +96,6 @@ public class MainActivity extends ActionBarActivity implements MusicListFragment
         return super.onOptionsItemSelected(item);
     }
 
-    //Fragment Interfaces
     //Interfaces for MusicListFragment
     @Override
     public void onFragmentInteraction(String id)
@@ -266,6 +265,13 @@ public class MainActivity extends ActionBarActivity implements MusicListFragment
         transaction.addToBackStack(null);
         transaction.commit();
     }
+    
+    //This method starts the playback of the selected song from the playlist fragment
+    @Override
+	public void onPlayListItemClick(MusicListItem item, int position) 
+    {
+    	//TODO: Can't implement this until I implement all of the upstream changes I did to communicate between the service, fragments and shit
+	}
 
 
     /**
