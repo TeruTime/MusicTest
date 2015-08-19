@@ -95,6 +95,14 @@ public class MainActivity extends ActionBarActivity implements MusicListFragment
 
         return super.onOptionsItemSelected(item);
     }
+    
+    @Override
+    public void onBackPressed()
+    {
+    	super.onBackPressed();
+    	//currently the action bar is configured to reappear whenever the back button is pressed
+    	getSupportActionBar().show();
+    }
 
     //Interfaces for MusicListFragment
     @Override
@@ -112,10 +120,18 @@ public class MainActivity extends ActionBarActivity implements MusicListFragment
         //from anywhere in the application. Therefore we must build a service that is spawned off of the prepareAsync() task
         long id = item.getSongID();
         //Intent mIntent = new Intent(ACTION_PLAY);
-        Intent mIntent = new Intent(this, MusicPlayerService.class);
-        mIntent.putExtra("MUSIC_ID", id);
-        startService(mIntent);
-        doBindService();
+        if(mBoundService == null)
+        {
+	        Intent mIntent = new Intent(this, MusicPlayerService.class);
+	        mIntent.putExtra("MUSIC_ID", id);
+	        startService(mIntent);
+	        doBindService();
+        }
+        else
+        {
+        	mBoundService.resetMediaPlayer();
+        	mBoundService.startNewPlaylist(id);
+        }
 
         //Start up the musicplayer fragment
         MusicPlayerFragment playerFrag = (MusicPlayerFragment)getSupportFragmentManager().findFragmentById(R.id.fragment_musicplayer);
@@ -127,6 +143,8 @@ public class MainActivity extends ActionBarActivity implements MusicListFragment
         {
             //initalize the music player with the current player item
             MusicPlayerFragment newFragment = MusicPlayerFragment.newInstance(item);
+            
+            //TODO: Make it so if the same list item is clicked on, it just loads the fragment with the seek bar in the right place instead of playing the song
 
             //Replace whatever is in the current fragment view with this new fragment. Then add this
             // fragment to the back stack so the user can navigate back.
@@ -137,6 +155,9 @@ public class MainActivity extends ActionBarActivity implements MusicListFragment
             //commit the transaction
             transaction.commit();
         }
+        
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.hide();
     }
 
     //Interface for MusicPlayerFragment
@@ -270,6 +291,8 @@ public class MainActivity extends ActionBarActivity implements MusicListFragment
     @Override
 	public void onPlayListItemClick(MusicListItem item, int position) 
     {
+    	mBoundService.resetMediaPlayer();
+    	mBoundService.setMpDataSource(position);
     	//TODO: Can't implement this until I implement all of the upstream changes I did to communicate between the service, fragments and shit
 	}
 

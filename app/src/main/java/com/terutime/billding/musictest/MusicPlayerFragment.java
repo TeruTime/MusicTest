@@ -6,17 +6,21 @@ package com.terutime.billding.musictest;
 
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.os.Looper;
 import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.v4.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,20 +33,23 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.TimeUnit;
 
 public class MusicPlayerFragment extends Fragment
 {
     //private MediaPlayer mediaPlayer;
-    public TextView songName, duration;
+    public TextView songName, duration, songAlbum;
     public MusicListItem musicListItem;
     private double timeElapsed = 0, finalTime = 0;
     private int forwardTime = 2000, backwardTime = 2000;
     //private Handler durationHandler = new Handler();
     private SeekBar seekbar;
     private OnMusicPlayerListener listener;
-    private ImageButton pauseButton;
+    //specific pause button replaced with a start/stop button
+    //private ImageButton pauseButton;
     private ImageButton playButton;
     private ImageButton fwdButton;
     private SquareImageView albumCover;
@@ -82,12 +89,14 @@ public class MusicPlayerFragment extends Fragment
         View rootView = inflater.inflate(R.layout.fragment_musicplayer, container, false);
 
         songName = (TextView) rootView.findViewById(R.id.songName);
+        songAlbum = (TextView) rootView.findViewById(R.id.songAlbum);
         //mediaPlayer = MediaPlayer.create(this, R.raw.sample_song);
         finalTime = musicListItem.getSongDuration();
         duration = (TextView) rootView.findViewById(R.id.songDuration);
         seekbar = (SeekBar) rootView.findViewById(R.id.seekBar);
         songName.setText(musicListItem.getSongTitle());
-        pauseButton = (ImageButton) rootView.findViewById(R.id.media_pause);
+        songAlbum.setText(musicListItem.getSongAlbum());
+        //pauseButton = (ImageButton) rootView.findViewById(R.id.media_pause);
         playButton = (ImageButton) rootView.findViewById(R.id.media_play);
         fwdButton = (ImageButton) rootView.findViewById(R.id.media_ff);
         albumCover = (SquareImageView) rootView.findViewById(R.id.mp3Image);
@@ -107,7 +116,24 @@ public class MusicPlayerFragment extends Fragment
 
         //TODO:change image size of the album art to be the size of the album cover size
         //albumCover.setImageBitmap(Bitmap.createScaledBitmap(musicListItem.getSongAlbumArt(), 200, 200, false));
-        albumCover.setImageBitmap(musicListItem.getSongAlbumArt());
+        //albumCover.setImageBitmap(musicListItem.getSongAlbumArt());
+        Uri artworkUri = Uri.parse("content://media/external/audio/albumart");
+        Uri albumArtUri = ContentUris.withAppendedId(artworkUri, musicListItem.getSongAlbumID());
+        try 
+        {
+			albumCover.setImageBitmap(MediaStore.Images.Media.getBitmap(getActivity().getContentResolver(), albumArtUri));
+		} 
+        catch (FileNotFoundException e) 
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			albumCover.setImageBitmap(BitmapFactory.decodeResource(getActivity().getResources(), R.drawable.audio_file));
+		} 
+        catch (IOException e) 
+        {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 
         seekbar.setMax((int) finalTime);
         //seekbar.setClickable(false);
@@ -141,12 +167,12 @@ public class MusicPlayerFragment extends Fragment
             }
         });
 
-        pauseButton.setOnClickListener(new View.OnClickListener() {
+        /*pauseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 listener.onMediaPlayerPause();
             }
-        });
+        });*/
 
         playButton.setOnClickListener(new View.OnClickListener()
         {
